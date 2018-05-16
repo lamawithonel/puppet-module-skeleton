@@ -4,8 +4,8 @@ ANSWERS = <<EOF
 0.1.3
 simp
 Apache-2.0
-A simple dummy module designed to test Travis.
-https://github.com/simp/pupmod-simp-dummy
+A simple dnsmasq module designed to test the module skeleton.
+https://github.com/simp/pupmod-simp-dnsmasq
 
 
 
@@ -38,6 +38,10 @@ def generate_module( name, answers_file=nil )
 end
 
 
+task :default do
+  sh %(rake -T)
+end
+
 desc 'generate a module using the skeleton'
 task :generate,[:module_name] do |t,args|
   generate_module(args.module_name)
@@ -58,18 +62,21 @@ namespace :test do
     ensure_tmp
     Dir.chdir TMP_DIR
     File.open( 'pupmod.answers', 'w' ){ |f| f.print ANSWERS }
-    generate_module('simp-dummy','pupmod.answers')
+    generate_module('simp-dnsmasq','pupmod.answers')
   end
 
 
-  desc 'run `bundle exec rake test` inside the generated module'
+  desc 'run `bundle exec rake test` inside the generated module' +
+       "\n\n\tEnvironment variables:\n" +
+       "\t----------------------\n" +
+       "\tSIMP_beaker_suites=yes   # include beaker suites [default: no]"
   task :test do
     ensure_tmp
     Dir.chdir TMP_DIR
 
     # Different versions of `puppet module generate` will produce a directory
-    # with the name (changed since Puppet #21272/PUP-3124:
-    mod_dir = ['dummy', 'simp-dummy'].select{ |x| File.directory? x }.first
+    # with the name (changed since Puppet #21272/PUP-3124):
+    mod_dir = ['dnsmasq', 'simp-dnsmasq'].select{ |x| File.directory? x }.first
     puts "==== '#{Dir.pwd}' '#{mod_dir}'"
     "#{File.expand_path(mod_dir)}"
     puts "==== Entering #{mod_dir}"
@@ -80,8 +87,6 @@ namespace :test do
     [
       'PUPPET_VERSION',
       'STRICT_VARIABLES',
-      'FUTURE_PARSER',
-      'TRUSTED_NODE_DATA',
       'TRAVIS',
       'CI',
     ].each do |v|
@@ -90,8 +95,17 @@ namespace :test do
     env_globals_line = env_globals.join(' ')
 
     Bundler.with_clean_env do
-      ['bundle --without development system_tests',
-       'bundle exec rake test'].each do |cmd|
+      cmds = ['bundle exec rake test']
+      if ENV.fetch('SKELETON_beaker_suites','no') == 'yes'
+        cmds << 'bundle exec rake beaker:suites[default]'
+        _verb = 'with'
+      end
+      cmds = cmds.unshift "bundle --#{_verb||'without'} development system_tests"
+      unless ENV.fetch('SKELETON_keep_gemfilie_lock','no') == 'yes'
+        cmds = cmds.unshift "rm -f Gemfile.lock"
+      end
+
+      cmds.each do |cmd|
         line = "#{env_globals_line} #{cmd}"
         puts "==== EXECUTING: #{line}"
         exit 1 unless system(line)

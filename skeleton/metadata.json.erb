@@ -1,25 +1,27 @@
 {
-  "name":    "<%= metadata.full_module_name %>",
+  "name": "<%= metadata.full_module_name %>",
   "version": "<%= metadata.version %>",
-  "author":  "<%= metadata.author %>",
+  "author": "<%= metadata.author %>",
   "summary": "<%= metadata.summary %>",
   "license": "<%= metadata.license %>",
-  "source":  "<%= metadata.source %>",
+  "source": "<%= metadata.source %>",
   "project_page": "<%= metadata.project_page %>",
-  "issues_url":   "<%= metadata.issues_url %>",
-  "tags": [ "simp" ],
+  "issues_url": "<%= metadata.issues_url %>",
+  "tags": [
+    "simp"
+  ],
   "dependencies": [
     {
-      "name": "puppetlabs-stdlib",
-      "version_requirement": ">= 4.1.0"
+      "name": "simp/iptables",
+      "version_requirement": ">= 6.0.1 < 7.0.0"
     },
     {
-      "name": "simp-iptables",
-      "version_requirement": ">= 4.1.0"
+      "name": "simp/simplib",
+      "version_requirement": ">= 3.3.1 < 4.0.0"
     },
     {
-      "name": "simp-simplib",
-      "version_requirement": ">= 1.0.0"
+      "name": "puppetlabs/stdlib",
+      "version_requirement": ">= 4.13.1 < 5.0.0"
     }
   ],
   "operatingsystem_support": [
@@ -37,5 +39,12 @@
         "7"
       ]
     }
-  ]
+  ],
+  "requirements": [
+    {
+      "name": "puppet",
+      "version_requirement": ">= 4.6.0 < 5.0.0"
+    }
+  ],
+  "data_provider": "hiera"
 }
